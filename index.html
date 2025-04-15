@@ -9,10 +9,10 @@
       font-family: sans-serif;
       background: #111;
       color: #fff;
+      text-align: center;
       margin: 0;
       display: flex;
       height: 100vh;
-      overflow: hidden;
     }
     .column {
       flex: 1;
@@ -22,11 +22,29 @@
     }
     h1 {
       margin-top: 0;
-      text-align: center;
+    }
+    .filters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 1em;
+    }
+    .filters button {
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .filters button:hover {
+      background: #555;
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 1em;
     }
     .card-box {
@@ -60,7 +78,6 @@
     }
     .deck h2 {
       margin-top: 0;
-      text-align: center;
     }
     .deck-list {
       display: flex;
@@ -78,6 +95,14 @@
 <body>
   <div class="column">
     <h1>All Cards</h1>
+    <div class="filters">
+      <button data-color="all">All</button>
+      <button data-color="white">⚪ White</button>
+      <button data-color="blue">🔵 Blue</button>
+      <button data-color="black">⚫ Black</button>
+      <button data-color="red">🔴 Red</button>
+      <button data-color="green">🟢 Green</button>
+    </div>
     <div class="cards" id="cardContainer"></div>
   </div>
   <div class="column deck">
@@ -110,7 +135,7 @@
 
     function addToDeck(id) {
       if (deck.length >= 60) {
-        alert("Your deck is full (60 cards).");
+        alert("Your deck is full (60 cards).\");
         return;
       }
       const card = cards.find(c => c.id === id);
@@ -129,9 +154,10 @@
       deckCount.textContent = deck.length;
     }
 
-    function displayCards() {
+    function displayCards(filterColor = 'all') {
       container.innerHTML = '';
-      for (let card of cards) {
+      const filtered = filterColor === 'all' ? cards : cards.filter(c => c.color === filterColor);
+      for (let card of filtered) {
         const div = document.createElement('div');
         div.className = 'card-box';
         div.innerHTML = `
@@ -141,6 +167,13 @@
         container.appendChild(div);
       }
     }
+
+    document.querySelectorAll('.filters button').forEach(button => {
+      button.addEventListener('click', () => {
+        const color = button.getAttribute('data-color');
+        displayCards(color);
+      });
+    });
 
     displayCards();
   </script>
