@@ -2,117 +2,87 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Build a Deck - Maze of Dragons</title>
+  <title>Build a Deck</title>
+  <link href="https://cdn.jsdelivr.net/npm/lightbox2@2/dist/css/lightbox.min.css" rel="stylesheet">
   <style>
     body {
       font-family: sans-serif;
       background: #111;
       color: #fff;
+      text-align: center;
       margin: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     h1 {
-      margin: 1em 0 0.5em;
-    }
-    .container {
-      display: flex;
-      width: 100%;
-      max-width: 1200px;
-      padding: 1em;
-      gap: 1em;
-    }
-    .card-gallery, .deck-area {
-      flex: 1;
-      padding: 1em;
-      background: #222;
-      border-radius: 12px;
-    }
-    .card-gallery {
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .filters {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 1em;
-    }
-    .filters button {
-      background: #333;
-      color: white;
-      margin: 5px;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .filters button:hover {
-      background: #555;
+      padding: 1em 0 0.5em;
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1em;
+      padding: 1em;
     }
-    .card img {
+    .card-box {
+      position: relative;
+      display: inline-block;
+    }
+    .card-box img {
       width: 100%;
+      border-radius: 10px;
       border: 2px solid #444;
-      border-radius: 6px;
       cursor: pointer;
+      transition: transform 0.2s ease;
     }
-    .deck-area h2 {
+    .card-box img:hover {
+      transform: scale(1.03);
+    }
+    .zoom-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 4px 6px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 14px;
+      z-index: 2;
+    }
+    .zoom-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .deck {
+      padding: 1em;
+      border-top: 2px solid #333;
+    }
+    .deck h2 {
       margin-top: 0;
     }
-    .deck-cards {
+    .deck-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 10px;
+      justify-content: center;
     }
-    .deck-cards img {
-      width: 80px;
-      border: 2px solid #888;
+    .deck-list img {
+      width: 100px;
       border-radius: 6px;
-    }
-    .clear-button {
-      margin-top: 1em;
-      background: crimson;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .clear-button:hover {
-      background: darkred;
+      border: 2px solid #666;
     }
   </style>
 </head>
 <body>
   <h1>Build a Deck</h1>
-  <div class="container">
-    <div class="card-gallery">
-      <div class="filters">
-        <button data-color="all">All</button>
-        <button data-color="white">White</button>
-        <button data-color="blue">Blue</button>
-        <button data-color="black">Black</button>
-        <button data-color="red">Red</button>
-        <button data-color="green">Green</button>
-      </div>
-      <div class="cards" id="cardGallery"></div>
-    </div>
-    <div class="deck-area">
-      <h2>Your Deck (<span id="deckCount">0</span>)</h2>
-      <div class="deck-cards" id="deckContainer"></div>
-      <button class="clear-button" onclick="clearDeck()">Clear Deck</button>
-    </div>
+  <div class="cards" id="cardContainer"></div>
+
+  <div class="deck">
+    <h2>Your Deck (<span id="deckCount">0</span>/60)</h2>
+    <div class="deck-list" id="deckList"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/lightbox2@2/dist/js/lightbox-plus-jquery.min.js"></script>
   <script>
-    const gallery = document.getElementById('cardGallery');
-    const deckContainer = document.getElementById('deckContainer');
+    const container = document.getElementById('cardContainer');
+    const deckList = document.getElementById('deckList');
     const deckCount = document.getElementById('deckCount');
     const deck = [];
 
@@ -132,43 +102,41 @@
       });
     }
 
-    function displayGallery(filter = 'all') {
-      gallery.innerHTML = '';
-      const filtered = filter === 'all' ? cards : cards.filter(c => c.color === filter);
-      for (let card of filtered) {
-        const div = document.createElement('div');
-        div.className = 'card';
-        div.innerHTML = `<img src="${card.image}" alt="Card ${card.id}" onclick="addToDeck(${card.id})">`;
-        gallery.appendChild(div);
+    function addToDeck(id) {
+      if (deck.length >= 60) {
+        alert("Your deck is full (60 cards).");
+        return;
       }
+      const card = cards.find(c => c.id === id);
+      deck.push(card);
+      updateDeckDisplay();
     }
 
-    function addToDeck(cardId) {
-      if (deck.length >= 60) return alert('Deck is full!');
-      const card = cards.find(c => c.id === cardId);
-      if (card) {
-        deck.push(card);
+    function updateDeckDisplay() {
+      deckList.innerHTML = '';
+      deck.forEach(card => {
         const img = document.createElement('img');
         img.src = card.image;
         img.alt = `Card ${card.id}`;
-        deckContainer.appendChild(img);
-        deckCount.textContent = deck.length;
+        deckList.appendChild(img);
+      });
+      deckCount.textContent = deck.length;
+    }
+
+    function displayCards() {
+      container.innerHTML = '';
+      for (let card of cards) {
+        const div = document.createElement('div');
+        div.className = 'card-box';
+        div.innerHTML = `
+          <img src="${card.image}" alt="Card ${card.id}" onclick="addToDeck(${card.id})">
+          <a href="${card.image}" data-lightbox="deck" data-title="Card ${card.id}" class="zoom-btn">🔍</a>
+        `;
+        container.appendChild(div);
       }
     }
 
-    function clearDeck() {
-      deck.length = 0;
-      deckContainer.innerHTML = '';
-      deckCount.textContent = '0';
-    }
-
-    document.querySelectorAll('.filters button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        displayGallery(btn.dataset.color);
-      });
-    });
-
-    displayGallery();
+    displayCards();
   </script>
 </body>
 </html>
