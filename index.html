@@ -176,6 +176,9 @@
         `;
         container.appendChild(div);
       }
+      if (window.lightbox) {
+        lightbox.reload();
+      }
     }
 
     document.querySelectorAll('.filters button').forEach(button => {
