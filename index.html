@@ -9,10 +9,10 @@
       font-family: sans-serif;
       background: #111;
       color: #fff;
-      text-align: center;
       margin: 0;
       display: flex;
       height: 100vh;
+      overflow: hidden;
     }
     .column {
       flex: 1;
@@ -22,10 +22,11 @@
     }
     h1 {
       margin-top: 0;
+      text-align: center;
     }
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 1em;
     }
     .card-box {
@@ -59,6 +60,7 @@
     }
     .deck h2 {
       margin-top: 0;
+      text-align: center;
     }
     .deck-list {
       display: flex;
@@ -108,7 +110,7 @@
 
     function addToDeck(id) {
       if (deck.length >= 60) {
-        alert("Your deck is full (60 cards).\");
+        alert("Your deck is full (60 cards).");
         return;
       }
       const card = cards.find(c => c.id === id);
